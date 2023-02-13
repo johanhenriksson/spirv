@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -28,7 +27,7 @@ func main() {
 	for _, input := range inputs {
 		log.Println("  name:         ", input.Name)
 		log.Println("  location:     ", input.Location)
-		log.Println("  type:         ", fmt.Sprintf("0x%x", input.TypeFlags))
+		log.Println("  type:         ", input.Type)
 		log.Println("  storage class:", input.StorageClass)
 	}
 
@@ -42,6 +41,7 @@ func main() {
 		for _, binding := range desc.Bindings {
 			log.Println("    binding:", binding.Binding)
 			log.Println("    name:   ", binding.Name)
+			log.Println("    type:   ", binding.Type)
 		}
 	}
 }

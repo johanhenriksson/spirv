@@ -62,8 +62,7 @@ func (sm *ShaderModule) EnumerateInputVariables() ([]Input, error) {
 			Name:         name,
 			Location:     int(input.location),
 			StorageClass: int(input.storage_class),
-			TypeName:     C.GoString(input.type_description.type_name),
-			TypeFlags:    int(input.type_description.type_flags),
+			Type:         parseTypeDescription(input.type_description),
 		})
 	}
 	return parsed, nil
@@ -96,6 +95,7 @@ func (sm *ShaderModule) EnumerateDescriptorSets() ([]DescriptorSet, error) {
 			bindings = append(bindings, DescriptorBinding{
 				Name:    C.GoString(binding.name),
 				Binding: int(binding.binding),
+				Type:    parseTypeDescription(binding.type_description),
 			})
 		}
 
@@ -106,6 +106,23 @@ func (sm *ShaderModule) EnumerateDescriptorSets() ([]DescriptorSet, error) {
 	}
 
 	return parsed, nil
+}
+
+func parseTypeDescription(t *C.SpvReflectTypeDescription) TypeDescription {
+	members := make([]TypeDescription, 0, t.member_count)
+	memberSlice := PtrToSlice[C.SpvReflectTypeDescription](unsafe.Pointer(t.members), int(t.member_count), int(t.member_count))
+	for _, member := range memberSlice {
+		m := parseTypeDescription(&member)
+		members = append(members, m)
+	}
+
+	return TypeDescription{
+		Name:             C.GoString(t.type_name),
+		Flags:            int(t.type_flags),
+		StructMemberName: C.GoString(t.struct_member_name),
+		StorageClass:     int(t.storage_class),
+		Members:          members,
+	}
 }
 
 func (sm *ShaderModule) Destroy() {
